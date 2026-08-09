@@ -1,4 +1,4 @@
-name: Android APK Build
+name: Build Android APK
 
 on:
   workflow_dispatch:
@@ -8,87 +8,42 @@ on:
 
 jobs:
   build:
-    name: Build Android APK
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-latest
 
     steps:
-      # 1. Get your project files
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # 2. Install system dependencies
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
       - name: Install system dependencies
         run: |
           sudo apt-get update
           sudo apt-get install -y \
-            git \
-            zip \
-            unzip \
-            openjdk-17-jdk \
-            python3 \
-            python3-pip \
-            python3-venv \
-            autoconf \
-            automake \
-            libtool \
-            pkg-config \
-            zlib1g-dev \
-            libncurses5-dev \
-            libncursesw5-dev \
-            libtinfo6 \
-            cmake \
-            libffi-dev \
-            libssl-dev \
-            build-essential \
-            ccache \
-            clang
+            git zip unzip openjdk-17-jdk \
+            autoconf automake libtool pkg-config \
+            zlib1g-dev libncurses5-dev \
+            libncursesw5-dev cmake \
+            libffi-dev libssl-dev \
+            build-essential ccache
 
-      # 3. Select Java 17
-      - name: Set Java 17
-        run: |
-          echo "JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64" >> "$GITHUB_ENV"
-          echo "/usr/lib/jvm/java-17-openjdk-amd64/bin" >> "$GITHUB_PATH"
-
-      # 4. Create Python virtual environment
-      - name: Create virtual environment
-        run: |
-          python3 -m venv .venv
-          . .venv/bin/activate
-          python -m pip install --upgrade pip setuptools wheel
-
-      # 5. Install Buildozer 1.6.0
       - name: Install Buildozer
         run: |
-          . .venv/bin/activate
-          python -m pip install buildozer==1.6.0
-          buildozer --version
+          python -m pip install --upgrade pip
+          pip install buildozer
+          pip install cython==0.29.37
 
-      # 6. Check project files
-      - name: Check project
-        run: |
-          echo "Project files:"
-          ls -la
-
-          echo ""
-          echo "Buildozer version:"
-          . .venv/bin/activate
-          buildozer --version
-
-          echo ""
-          echo "Java version:"
-          java -version
-
-      # 7. Build Android debug APK
       - name: Build APK
         run: |
-          . .venv/bin/activate
-          buildozer -v android debug
+          rm -rf ~/.buildozer
+          yes | buildozer -v android debug
 
-      # 8. Upload APK
       - name: Upload APK
         if: success()
         uses: actions/upload-artifact@v4
         with:
-          name: android-debug-apk
+          name: android-apk
           path: bin/*.apk
-          if-no-files-found: error
