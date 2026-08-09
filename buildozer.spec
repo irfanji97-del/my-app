@@ -4,7 +4,7 @@
 title = My App
 package.name = myapp
 package.domain = org.example
-
+version = 1.0.0
 source.dir = .
 source.main = main.py
 source.include_exts = py,png,jpg,jpeg,kv,atlas
