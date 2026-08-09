@@ -47,5 +47,5 @@ jobs:
        "build-tools;35.0.0"
 
       - name: Build APK
-  run: |
-    buildozer -v android debug
+        run: |
+         buildozer -v android debug
