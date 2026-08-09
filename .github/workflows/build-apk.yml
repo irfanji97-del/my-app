@@ -35,17 +35,17 @@ jobs:
           python -m pip install --upgrade pip
           pip install buildozer cython==0.29.37
 
-      - name: Accept Android licenses
+      - name: Prepare Android SDK licenses
         run: |
-          yes | sdkmanager --licenses || true
+         - yes | ~/.buildozer/android/platform/android-sdk/cmdline-tools/latest/bin/sdkmanager --licenses || true
 
-      - name: Install Android SDK packages
+      - name: Install Android SDK Build Tools
         run: |
-          sdkmanager "platform-tools" "platforms;android-35" "build-tools;35.0.0"
+       ~/.buildozer/android/platform/android-sdk/cmdline-tools/latest/bin/sdkmanager \
+       "platform-tools" \
+       "platforms;android-35" \
+      "build-tools;35.0.0"
 
-      - name: Build APK
-        run: |
-          buildozer -v android debug
+- name: Build APK
   run: |
     buildozer -v android debug
-          path: bin/*.apk
