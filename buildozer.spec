@@ -1,20 +1,42 @@
+name: Build Android APK
 
-[app]
+on:
+  push:
+    branches: [ "main" ]
+  workflow_dispatch:
 
-title = My App
-package.name = myapp
-package.domain = org.example
-version = 1.0.0
-source.dir = .
-source.main = main.py
-source.include_exts = py,png,jpg,jpeg,kv,atlas
+jobs:
+  build:
+    runs-on: ubuntu-latest
 
-requirements = python3,kivy
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
 
-orientation = portrait
-fullscreen = 0
+    - name: Set up JDK 17
+      uses: actions/setup-java@v4
+      with:
+        java-version: '17'
+        distribution: 'temurin'
 
-[buildozer]
+    - name: Find and setup gradlew
+      run: find . -name "gradlew" -exec chmod +x {} + || true
 
-log_level = 2
-warn_on_root = 1
+    - name: Generate dummy debug keystore
+      run: keytool -genkey -v -keystore debug.keystore -storepass android -alias androiddebugkey -keypass android -keyalg RSA -keysize 2048 -validity 10000 -dname "C=US, O=Android, CN=Android Debug"
+
+    - name: Build Debug APK
+      run: |
+        if [ -f "gradlew" ]; then
+          ./gradlew assembleDebug
+        elif [ -d "android" ] && [ -f "android/gradlew" ]; then
+          cd android && ./gradlew assembleDebug
+        else
+          gradle assembleDebug
+        fi
+
+    - name: Upload all APKs
+      uses: actions/upload-artifact@v4
+      with:
+        name: my-android-app
+        path: '**/*.apk'
